@@ -6,7 +6,7 @@ services:
     container_name: go_app
     image: sebastianwebapp/go_crud_postgresql:latest
     ports:
-      - "8081:8081"
+      - "3000:3000"
     restart: always # Reinicio del microservicio en caso de fallo
     depends_on:
       - postgres
