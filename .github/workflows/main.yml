@@ -92,6 +92,7 @@ jobs:
               docker stop go_app || true
               docker rm go_app || true
 
+
   
               # Iniciar el contenedor de postgres_db
                docker run -d --name postgres_db \
