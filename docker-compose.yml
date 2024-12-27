@@ -4,7 +4,7 @@ services:
   app:
     build: .
     container_name: go_app
-    image: go_crud_postgresql
+    image: sebastianwebapp/go_crud_postgresql:latest
     ports:
       - "8081:8081"
     restart: always # Reinicio del microservicio en caso de fallo
@@ -14,7 +14,7 @@ services:
       - app-network
 
   postgres:
-    image: postgres:13
+    image: postgres:latest
     container_name: postgres_db
     environment:
       POSTGRES_USER: postgres
