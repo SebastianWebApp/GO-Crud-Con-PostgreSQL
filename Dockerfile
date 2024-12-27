@@ -27,7 +27,7 @@ COPY --from=builder /app .
 COPY --from=builder /.env .
 
 # Exponer el puerto en el que se ejecuta la aplicación
-EXPOSE 8081
+EXPOSE 3000
 
 # Comando para ejecutar la aplicación
 CMD ["./app"]
