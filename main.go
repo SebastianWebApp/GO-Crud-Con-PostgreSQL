@@ -200,6 +200,48 @@ func getAllPostsFromDB() ([]Post, error) {
 	return posts, nil
 }
 
+// Función para leer un post desde la base de datos por ID
+func getPostByIDFromDB(postID string) (Post, error) {
+	// Cargar las variables de entorno
+	loadEnv()
+	db, err := connectToDB()
+	if err != nil {
+		return Post{}, err
+	}
+	defer db.Close()
+
+	// Obtener el nombre de la tabla desde las variables de entorno
+	tableName := os.Getenv("DB_TABLE")
+
+	// Validar que el nombre de la tabla sea válido
+	if tableName == "" {
+		return Post{}, fmt.Errorf("El nombre de la tabla no está definido en las variables de entorno.")
+	}
+
+	// Validar que el ID no esté vacío
+	if postID == "" {
+		return Post{}, fmt.Errorf("El ID de la información no puede estar vacío.")
+	}
+
+	// Construir la consulta SQL para obtener un post por ID
+	query := fmt.Sprintf("SELECT ID, Imagen, Nombre, Descripcion FROM %s WHERE ID = $1", tableName)
+
+	// Definir una variable para almacenar el post
+	var post Post
+
+	// Ejecutar la consulta SQL con el parámetro
+	err = db.QueryRow(query, postID).Scan(&post.ID, &post.Imagen, &post.Nombre, &post.Descripcion)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return Post{}, fmt.Errorf("No se encontró una información con el ID proporcionado")
+		}
+		return Post{}, fmt.Errorf("Error al obtener el post: %v", err)
+	}
+
+	// Retornar el post encontrado
+	return post, nil
+}
+
 // Función para actualizar un post en la base de datos
 func updatePostInDB(post Post) error {
 	// Cargar las variables de entorno
@@ -317,6 +359,41 @@ func webhookGetHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Handler para obtener solo el ID de un post por ID
+func webhookGetPostIDByIDHandler(w http.ResponseWriter, r *http.Request) {
+	// Obtener el ID del post desde el cuerpo de la solicitud (supuesto que es un JSON)
+	var post Post
+	err := json.NewDecoder(r.Body).Decode(&post)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(Response{
+			Estado:    false,
+			Respuesta: "Solicitud no válida",
+		})
+		return
+	}
+
+	// Llamar a la función para obtener el ID por ID
+	postID, err := getPostByIDFromDB(post.ID)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(Response{
+			Estado:    false,
+			Respuesta: fmt.Sprintf("Error al obtener el ID: %v", err),
+		})
+		return
+	}
+
+	// Codificar el ID en formato JSON y enviar la respuesta
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(Response{
+		Estado:    true,
+		Respuesta: postID,
+	})
+}
+
 // Handler para actualizar un post
 func webhookUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	var post Post
@@ -403,10 +480,11 @@ func main() {
 	}
 
 	// Rutas para los webhooks
-	http.HandleFunc("/notify", webhookCreateHandler) // Crear post
-	http.HandleFunc("/posts", webhookGetHandler)     // Obtener posts
-	http.HandleFunc("/update", webhookUpdateHandler) // Actualizar post
-	http.HandleFunc("/delete", webhookDeleteHandler) // Eliminar post
+	http.HandleFunc("/notify", webhookCreateHandler)           // Crear post
+	http.HandleFunc("/posts", webhookGetHandler)               // Obtener posts
+	http.HandleFunc("/posts_uni", webhookGetPostIDByIDHandler) // Obtener posts
+	http.HandleFunc("/update", webhookUpdateHandler)           // Actualizar post
+	http.HandleFunc("/delete", webhookDeleteHandler)           // Eliminar post
 
 	// Iniciar el servidor
 	log.Println("Servidor receptor escuchando en http://localhost:3000/")
