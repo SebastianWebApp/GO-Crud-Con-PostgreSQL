@@ -1,11 +1,11 @@
-###Hola 👋 Soy Mateo Espinosa
+#### Hola 👋 Soy Mateo Espinosa
 Este repositorio presenta un proyecto básico que demuestra cómo crear un CRUD utilizando Go y PostgreSQL, con una arquitectura organizada para un desarrollo eficiente. 🚀
 
 Características principales:
 Configuración lista para implementar con Docker y Docker Compose.
 Automatización del proceso de subida de imágenes del microservicio a Docker Hub mediante GitHub Actions.
 Implementación en una instancia de AWS, permitiendo visualizar y utilizar el microservicio en un entorno real.
-###Tecnologías utilizadas:
+#### Tecnologías utilizadas:
 <span> 
   <img src="https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white"> 
   <img src="https://img.shields.io/badge/postgresql-%23336791.svg?style=for-the-badge&logo=postgresql&logoColor=white"> 
